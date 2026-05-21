@@ -40,7 +40,8 @@ export type IndexSpec = {
   concerningWhen?: { thresholdPct: number; copy: string };
   fetcher:
     | { kind: "wb"; indicator: string }
-    | { kind: "owid"; slug: string };
+    | { kind: "owid"; slug: string }
+    | { kind: "rsf" };
 };
 
 export const INDICES: IndexSpec[] = [
@@ -217,11 +218,10 @@ export const INDICES: IndexSpec[] = [
     category: "freedom",
     name: "Press Freedom",
     emoji: "📰",
-    description: "Reporters Without Borders' assessment. India is now classified as 'very serious' for journalist safety.",
-    source: { name: "RSF via OWID", url: "https://ourworldindata.org/grapher/press-freedom-rsf" },
-    invert: true,
-    concerningWhen: { thresholdPct: 0.66, copy: "Below Afghanistan and Pakistan in some recent years." },
-    fetcher: { kind: "owid", slug: "press-freedom-rsf" },
+    description: "Reporters Without Borders' annual ranking. Higher score means freer press; India is classified as 'very serious' for journalist safety.",
+    source: { name: "Reporters Without Borders", url: "https://rsf.org/en/index" },
+    concerningWhen: { thresholdPct: 0.66, copy: "Among the worst-ranked democracies for journalist safety." },
+    fetcher: { kind: "rsf" },
   },
   {
     slug: "democracy",
@@ -263,15 +263,16 @@ export const INDICES: IndexSpec[] = [
 
   // ============ HUNGER ============
   {
-    slug: "hunger",
+    slug: "undernourishment",
     category: "hunger",
-    name: "Global Hunger Index",
+    name: "Undernourishment Prevalence",
     emoji: "🥣",
-    description: "Composite of undernourishment, child wasting, stunting, and mortality. Lower is better.",
-    source: { name: "GHI via OWID", url: "https://ourworldindata.org/grapher/global-hunger-index" },
+    description: "FAO's measure of the share of population whose food intake falls below minimum dietary energy requirements. Lower is better.",
+    source: { name: "FAO via OWID", url: "https://ourworldindata.org/grapher/prevalence-of-undernourishment" },
+    unit: "%",
     invert: true,
-    concerningWhen: { thresholdPct: 0.66, copy: "India scores worse on hunger than every neighbour except Afghanistan." },
-    fetcher: { kind: "owid", slug: "global-hunger-index" },
+    concerningWhen: { thresholdPct: 0.66, copy: "Higher than every South Asian neighbour except Afghanistan." },
+    fetcher: { kind: "owid", slug: "prevalence-of-undernourishment" },
   },
   {
     slug: "extreme-poverty",

@@ -22,6 +22,7 @@ export async function GET(request: Request) {
 
   revalidateTag("wb", "max");
   revalidateTag("owid", "max");
+  revalidateTag("rsf", "max");
   revalidatePath("/");
   for (const spec of INDICES) {
     revalidatePath(`/index/${spec.slug}`);

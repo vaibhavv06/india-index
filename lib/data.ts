@@ -1,6 +1,7 @@
 import type { IndexSpec } from "./indices";
-import { fetchAllCountries, fetchWBCountryCodes, type WBSeries } from "./worldbank";
-import { fetchOwidAll, type OwidSeries } from "./owid";
+import { fetchAllCountries, fetchWBCountryCodes } from "./worldbank";
+import { fetchOwidAll } from "./owid";
+import { fetchRsfAllYears } from "./rsf";
 
 export type Point = { year: number; value: number };
 export type SeriesData = { latest: Point | null; history: Point[] };
@@ -23,16 +24,10 @@ export type IndexData = {
   worldTotal: number | null;
 };
 
-/**
- * Fetch one index in a single shot: pulls the whole-world dataset, then derives
- * India's series, the South Asian peer snapshot, and India's world rank.
- *
- * The world ranking uses the latest year for which India has data, with a
- * tolerance of ±2 years so countries that report on slightly different cycles
- * still count.
- */
+type CountrySeries = { latest: Point | null; history: Point[] };
+
 export async function fetchIndexData(spec: IndexSpec): Promise<IndexData> {
-  let all: Map<string, { latest: Point | null; history: Point[] }>;
+  let all: Map<string, CountrySeries>;
   let realCountries: Set<string> | null = null;
 
   if (spec.fetcher.kind === "wb") {
@@ -40,8 +35,10 @@ export async function fetchIndexData(spec: IndexSpec): Promise<IndexData> {
       fetchAllCountries(spec.fetcher.indicator),
       fetchWBCountryCodes(),
     ]);
+  } else if (spec.fetcher.kind === "owid") {
+    all = await fetchOwidAll(spec.fetcher.slug);
   } else {
-    all = (await fetchOwidAll(spec.fetcher.slug)) as Map<string, OwidSeries>;
+    all = await fetchRsfAllYears();
   }
 
   const indiaSeries: SeriesData = (() => {
@@ -70,7 +67,7 @@ export async function fetchIndexData(spec: IndexSpec): Promise<IndexData> {
 }
 
 function computeWorldRank(
-  all: Map<string, { latest: Point | null }>,
+  all: Map<string, CountrySeries>,
   realCountries: Set<string> | null,
   indiaLatest: Point | null,
   invert?: boolean,
@@ -82,7 +79,6 @@ function computeWorldRank(
   for (const [code, series] of all.entries()) {
     if (realCountries && !realCountries.has(code)) continue;
     if (!series.latest) continue;
-    // Tolerance window so countries on slightly different reporting cycles count
     if (Math.abs(series.latest.year - targetYear) > 2) continue;
     candidates.push({ code, value: series.latest.value });
   }
